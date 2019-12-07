@@ -17,9 +17,13 @@ public class MessageQueue implements Runnable, Component {
     private final BlockingQueue<AbstractMessage> messages = new LinkedBlockingQueue<>();
     private final Map<Class<? extends AbstractMessage>, List<MessageListener>> messageListeners = new LinkedHashMap<>();
 
-    final ExecutorService notificationsService = Executors.newSingleThreadExecutor();
+    private final ExecutorService notificationsService = Executors.newSingleThreadExecutor();
 
     public MessageQueue() {
+    }
+
+    public void enqueueMessage(AbstractMessage message) {
+        this.messages.add(message);
     }
 
     public void register(Class<? extends AbstractMessage> messageType, MessageListener listener) {
