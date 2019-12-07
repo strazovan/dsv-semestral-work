@@ -1,5 +1,7 @@
 package cz.strazovan.dsv.sharedvariable.locking;
 
+import cz.strazovan.dsv.sharedvariable.topology.Topology;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,7 +10,8 @@ import java.util.stream.Collectors;
 
 public class CaRoDistributedLock implements DistributedLock {
 
-    private final String ownName;
+
+    private final Topology topology;
     private long myRequestTs;
     private long maxRequestTs;
     private boolean inUse;
@@ -17,8 +20,8 @@ public class CaRoDistributedLock implements DistributedLock {
 
     private static final Object _lock = new Object(); // just simple lock, we don't need ReentrantReadWriteLock here
 
-    public CaRoDistributedLock(String ownName) {
-        this.ownName = ownName;
+    public CaRoDistributedLock(Topology topology) {
+        this.topology = topology;
         this.init();
     }
 
@@ -27,24 +30,23 @@ public class CaRoDistributedLock implements DistributedLock {
         this.maxRequestTs = 0;
         this.inUse = false;
         this.requests = new ConcurrentHashMap<>();
-        this.requests.put(this.ownName, false);
+        this.requests.put(this.topology.getOwnId(), false);
         this.grants = new ConcurrentHashMap<>();
     }
 
     @Override
     public void lock() {
         synchronized (_lock) {
-            this.requests.put(this.ownName, true);
+            this.requests.put(this.topology.getOwnId(), true);
             this.myRequestTs = this.maxRequestTs + 1;
         }
-        this.getAllOtherNodes().stream()
-                .map(Map.Entry::getKey)
+        this.topology.getAllOtherNodes().stream()
                 .filter(nodeId -> this.grants.get(nodeId))
                 .forEach(this::sendRequest);
 
         this.waitForAllGrants();
 
-        this.requests.put(this.ownName, false);
+        this.requests.put(this.topology.getOwnId(), false);
         this.inUse = true;
     }
 
@@ -73,21 +75,15 @@ public class CaRoDistributedLock implements DistributedLock {
         if (!this.inUse) throw new IllegalStateException("Calling unlock when not locked");
         // todo handle invalid calls to this method
         this.inUse = false;
-        final var otherNodes = getAllOtherNodes();
-        for (Map.Entry<String, Boolean> otherNode : otherNodes) {
-            if (otherNode.getValue()) {
-                this.requests.put(otherNode.getKey(), false);
-                this.grants.put(otherNode.getKey(), false);
-                this.sendReply(otherNode.getKey());
+        this.topology.getAllOtherNodes().forEach(nodeId -> {
+            if (this.requests.get(nodeId)) {
+                this.requests.put(nodeId, false);
+                this.grants.put(nodeId, false);
+                this.sendReply(nodeId);
             }
-        }
+        });
     }
 
-    private List<Map.Entry<String, Boolean>> getAllOtherNodes() {
-        return this.requests.entrySet().stream()
-                .filter(entry -> !entry.getKey().equals(this.ownName))
-                .collect(Collectors.toList());
-    }
 
     private void sendRequest(String nodeId) {
         // TODO

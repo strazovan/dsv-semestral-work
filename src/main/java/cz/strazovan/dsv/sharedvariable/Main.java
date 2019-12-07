@@ -8,6 +8,6 @@ public class Main {
         final var messageQueue = new MessageQueue();
         messageQueue.start();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> messageQueue.stop()));
+        Runtime.getRuntime().addShutdownHook(new Thread(messageQueue::stop));
     }
 }
