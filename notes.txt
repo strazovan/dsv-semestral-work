@@ -1,0 +1,3 @@
+to get rid of the netty errors, use VM params -
+    --add-opens java.base/jdk.internal.misc=ALL-UNNAMED
+    -Dio.netty.tryReflectionSetAccessible=false
