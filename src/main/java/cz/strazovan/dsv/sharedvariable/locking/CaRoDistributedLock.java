@@ -1,14 +1,13 @@
 package cz.strazovan.dsv.sharedvariable.locking;
 
 import cz.strazovan.dsv.sharedvariable.topology.Topology;
+import cz.strazovan.dsv.sharedvariable.topology.TopologyChangeListener;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-public class CaRoDistributedLock implements DistributedLock {
+public class CaRoDistributedLock implements DistributedLock, TopologyChangeListener {
 
 
     private final Topology topology;
@@ -23,6 +22,7 @@ public class CaRoDistributedLock implements DistributedLock {
     public CaRoDistributedLock(Topology topology) {
         this.topology = topology;
         this.init();
+        this.topology.registerListener(this);
     }
 
     private void init() {
@@ -91,5 +91,17 @@ public class CaRoDistributedLock implements DistributedLock {
 
     private void sendReply(String nodeId) {
         // TODO
+    }
+
+    @Override
+    public void onNewNode(String nodeId) {
+        this.requests.put(nodeId, false);
+        this.grants.put(nodeId, true);
+    }
+
+    @Override
+    public void onNodeRemoved(String nodeId) {
+        this.requests.remove(nodeId);
+        this.grants.remove(nodeId);
     }
 }
