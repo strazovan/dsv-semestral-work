@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+package cz.strazovan.dsv;
+
+message Empty {
+
+}
+
+message RegisterNode {
+    string id = 1;
+}
+
+message RegisterNodeResponse {
+    repeated string id = 1;
+}
+
+message DataChange {
+    string data = 1;
+}
+
+message LockRequest {
+    string id = 1;
+    int64 requestTimestamp = 2;
+}
+
+message LockReply {
+    string id = 1;
+}
+
+message DeadNodeDiscovered {
+    string id = 1;
+}
+
+service SharedVariableService {
+    rpc register (RegisterNode) returns (Empty);
+    rpc registrationDone (RegisterNodeResponse) returns (Empty);
+    rpc dataChange (DataChange) returns (Empty);
+    rpc lockRequest (LockRequest) returns (Empty);
+    rpc lockReply (LockReply) returns (Empty);
+    rpc reportDeadNode (DeadNodeDiscovered) returns (Empty);
+}
+
