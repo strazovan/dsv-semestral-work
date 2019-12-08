@@ -2,7 +2,7 @@ package cz.strazovan.dsv.sharedvariable;
 
 import cz.strazovan.dsv.sharedvariable.locking.CaRoDistributedLock;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
-import cz.strazovan.dsv.sharedvariable.server.Server;
+import cz.strazovan.dsv.sharedvariable.messaging.server.Server;
 import cz.strazovan.dsv.sharedvariable.topology.Topology;
 
 import javax.swing.*;

@@ -1,4 +1,4 @@
-package cz.strazovan.dsv.sharedvariable.server;
+package cz.strazovan.dsv.sharedvariable.messaging.server;
 
 import cz.strazovan.dsv.sharedvariable.Component;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
