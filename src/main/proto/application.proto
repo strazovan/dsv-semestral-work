@@ -9,11 +9,11 @@ message Empty {
 }
 
 message RegisterNode {
-    string id = 1;
+    string NodeId = 1;
 }
 
 message RegisterNodeResponse {
-    repeated string id = 1;
+    repeated NodeId id = 1;
 }
 
 message DataChange {
@@ -21,16 +21,21 @@ message DataChange {
 }
 
 message LockRequest {
-    string id = 1;
+    NodeId id = 1;
     int64 requestTimestamp = 2;
 }
 
 message LockReply {
-    string id = 1;
+    NodeId id = 1;
 }
 
 message DeadNodeDiscovered {
-    string id = 1;
+    NodeId id = 1;
+}
+
+message NodeId {
+    string ip = 1;
+    int32 port = 2;
 }
 
 service SharedVariableService {
