@@ -28,7 +28,7 @@ public class Topology {
     }
 
     public TopologyEntry getOwnTopologyEntry() {
-        if (this.ownTopologyEntry != null) {
+        if (this.ownTopologyEntry == null) {
             this.ownTopologyEntry = new TopologyEntry(this.ownId, this.ownPort);
         }
         return this.ownTopologyEntry;
