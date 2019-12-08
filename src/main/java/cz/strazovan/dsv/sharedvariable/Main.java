@@ -2,12 +2,10 @@ package cz.strazovan.dsv.sharedvariable;
 
 import cz.strazovan.dsv.sharedvariable.locking.CaRoDistributedLock;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
-import cz.strazovan.dsv.sharedvariable.messaging.ServiceImpl;
 import cz.strazovan.dsv.sharedvariable.server.Server;
 import cz.strazovan.dsv.sharedvariable.topology.Topology;
-import io.grpc.ServerBuilder;
 
-import java.util.Objects;
+import javax.swing.*;
 
 public class Main {
 
@@ -29,6 +27,11 @@ public class Main {
 
         final var server = new Server(port, messageQueue);
         server.start();
+
+        final var frame = new JFrame();
+        frame.setName("Distributed todo list");
+        frame.setSize(800, 800);
+        frame.setVisible(true);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             messageQueue.stop();
