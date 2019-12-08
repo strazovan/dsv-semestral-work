@@ -1,11 +1,17 @@
 package cz.strazovan.dsv.sharedvariable.topology;
 
+import com.google.protobuf.AbstractMessage;
+import cz.strazovan.dsv.DeadNodeDiscovered;
+import cz.strazovan.dsv.RegisterNode;
+import cz.strazovan.dsv.sharedvariable.messaging.MessageListener;
+import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-public class Topology {
+public class Topology implements MessageListener {
 
     private final String ownId;
     private final int ownPort;
@@ -53,4 +59,20 @@ public class Topology {
     }
 
 
+    @Override
+    public void processMessage(AbstractMessage message) {
+        if (message instanceof RegisterNode) {
+            final var id = ((RegisterNode) message).getNodeId();
+            this.addNode(new TopologyEntry(id.getIp(), id.getPort()));
+        } else if (message instanceof DeadNodeDiscovered) {
+            final var id = ((DeadNodeDiscovered) message).getId();
+            this.removeNode(new TopologyEntry(id.getIp(), id.getPort()));
+        }
+    }
+
+    @Override
+    public void register(MessageQueue queue) {
+        queue.register(RegisterNode.class, this);
+        queue.register(DeadNodeDiscovered.class, this);
+    }
 }

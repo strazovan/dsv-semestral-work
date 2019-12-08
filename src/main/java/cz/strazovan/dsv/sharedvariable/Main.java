@@ -22,6 +22,7 @@ public class Main {
         messageQueue.start();
 
         final var topology = new Topology("127.0.0.1", port);
+        topology.register(messageQueue);
         final var lock = new CaRoDistributedLock(topology);
         lock.register(messageQueue);
 
