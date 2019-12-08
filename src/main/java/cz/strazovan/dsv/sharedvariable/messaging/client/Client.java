@@ -27,7 +27,9 @@ public class Client implements Component, TopologyChangeListener {
     }
 
     public void sendMessage(TopologyEntry to, AbstractMessage message) {
-        this.nodes.get(to).send(message);
+        this.nodes.
+                computeIfAbsent(to, entry -> new NodeEntry(this.buildChannel(entry)))
+                .send(message);
     }
 
     @Override
@@ -44,11 +46,15 @@ public class Client implements Component, TopologyChangeListener {
 
     @Override
     public void onNewNode(TopologyEntry nodeId) {
-        final var channel = ManagedChannelBuilder.forAddress(nodeId.getAddressAsString(), nodeId.getPort())
-                .usePlaintext()
-                .build();
+        final var channel = this.buildChannel(nodeId);
         this.channels.add(channel);
         this.nodes.put(nodeId, new NodeEntry(channel));
+    }
+
+    private ManagedChannel buildChannel(TopologyEntry nodeId) {
+        return ManagedChannelBuilder.forAddress(nodeId.getAddressAsString(), nodeId.getPort())
+                .usePlaintext()
+                .build();
     }
 
     @Override
