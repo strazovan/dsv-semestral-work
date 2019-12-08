@@ -29,6 +29,10 @@ public class TopologyEntry implements Comparable<TopologyEntry> {
         return address;
     }
 
+    public String getAddressAsString() {
+        return this.address.getHostAddress();
+    }
+
     public int getPort() {
         return port;
     }
