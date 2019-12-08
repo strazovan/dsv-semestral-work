@@ -28,6 +28,10 @@ public class Client implements Component, TopologyChangeListener {
         this.nodes = new LinkedHashMap<>();
     }
 
+    public void broadcast(AbstractMessage message) {
+        this.nodes.keySet().forEach(topologyEntry -> this.sendMessage(topologyEntry, message));
+    }
+
     public void sendMessage(TopologyEntry to, AbstractMessage message) {
         try {
             this.nodes.
