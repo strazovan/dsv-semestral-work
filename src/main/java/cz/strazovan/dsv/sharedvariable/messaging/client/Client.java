@@ -6,6 +6,8 @@ import cz.strazovan.dsv.sharedvariable.topology.TopologyChangeListener;
 import cz.strazovan.dsv.sharedvariable.topology.TopologyEntry;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,9 +29,16 @@ public class Client implements Component, TopologyChangeListener {
     }
 
     public void sendMessage(TopologyEntry to, AbstractMessage message) {
-        this.nodes.
-                computeIfAbsent(to, entry -> new NodeEntry(this.buildChannel(entry)))
-                .send(message);
+        try {
+            this.nodes.
+                    computeIfAbsent(to, entry -> new NodeEntry(this.buildChannel(entry)))
+                    .send(message);
+        } catch (StatusRuntimeException ex) {
+            if (ex.getStatus().getCode() == Status.Code.UNAVAILABLE) {
+                logger.error("Dead node detected (" + to + ")");
+            } else
+                logger.error("An error has occurred while sending the message", ex);
+        }
     }
 
     @Override

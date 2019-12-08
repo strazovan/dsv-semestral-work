@@ -20,7 +20,22 @@ public class NodeEntry {
     }
 
     public void send(AbstractMessage abstractMessage) {
-        throw new UnsupportedOperationException("Cannot send abstract message.");
+        if (abstractMessage instanceof RegisterNode)
+            this.send(((RegisterNode) abstractMessage));
+        else if (abstractMessage instanceof RegisterNodeResponse)
+            this.send(((RegisterNodeResponse) abstractMessage));
+        else if (abstractMessage instanceof DataChange)
+            this.send(((DataChange) abstractMessage));
+        else if (abstractMessage instanceof LockRequest)
+            this.send(((LockRequest) abstractMessage));
+        else if (abstractMessage instanceof LockReply)
+            this.send(((LockReply) abstractMessage));
+        else if (abstractMessage instanceof DeadNodeDiscovered)
+            this.send(((DeadNodeDiscovered) abstractMessage));
+        else {
+            throw new IllegalArgumentException("Unsupported message type");
+        }
+
     }
 
     public void send(RegisterNode registerNode) {
