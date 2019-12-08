@@ -2,8 +2,8 @@ package cz.strazovan.dsv.sharedvariable.topology;
 
 public interface TopologyChangeListener {
 
-    void onNewNode(String nodeId);
+    void onNewNode(TopologyEntry nodeId);
 
-    void onNodeRemoved(String nodeId);
+    void onNodeRemoved(TopologyEntry nodeId);
 
 }

@@ -8,27 +8,42 @@ import java.util.concurrent.ConcurrentSkipListSet;
 public class Topology {
 
     private final String ownId;
-    private final Set<String> nodes = new ConcurrentSkipListSet<>();
+    private final int ownPort;
+    private final Set<TopologyEntry> nodes = new ConcurrentSkipListSet<>();
     private final List<TopologyChangeListener> listeners = new LinkedList<>();
 
-    public Topology(String ownId) {
+    private TopologyEntry ownTopologyEntry = null; // lets make this lazy
+
+    public Topology(String ownId, int ownPort) {
         this.ownId = ownId;
+        this.ownPort = ownPort;
     }
 
     public String getOwnId() {
         return this.ownId;
     }
 
-    public Set<String> getAllOtherNodes() {
+    public int getOwnPort() {
+        return ownPort;
+    }
+
+    public TopologyEntry getOwnTopologyEntry() {
+        if (this.ownTopologyEntry != null) {
+            this.ownTopologyEntry = new TopologyEntry(this.ownId, this.ownPort);
+        }
+        return this.ownTopologyEntry;
+    }
+
+    public Set<TopologyEntry> getAllOtherNodes() {
         return Set.copyOf(this.nodes);
     }
 
-    private void addNode(String nodeId) {
+    private void addNode(TopologyEntry nodeId) {
         this.nodes.add(nodeId);
         this.listeners.forEach(listener -> listener.onNewNode(nodeId));
     }
 
-    private void removeNode(String nodeId) {
+    private void removeNode(TopologyEntry nodeId) {
         this.nodes.remove(nodeId);
         this.listeners.forEach(listener -> listener.onNodeRemoved(nodeId));
     }
