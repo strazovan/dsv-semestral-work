@@ -11,6 +11,8 @@ import cz.strazovan.dsv.sharedvariable.topology.TopologyEntry;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class Main {
 
@@ -58,13 +60,16 @@ public class Main {
         final var connectButton = new JButton("Connect");
         connectButton.addActionListener(e -> {
             final var to = new TopologyEntry(hostnameBox.getText(), Integer.parseInt(portBox.getText()));
-
-            client.sendMessage(to, RegisterNode.newBuilder()
-                    .setNodeId(NodeId.newBuilder()
-                            .setIp(hostnameBox.getText())
-                            .setPort(to.getPort())
-                            .build())
-                    .build());
+            try {
+                client.sendMessage(to, RegisterNode.newBuilder()
+                        .setNodeId(NodeId.newBuilder()
+                                .setIp(InetAddress.getLocalHost().getHostAddress())
+                                .setPort(port)
+                                .build())
+                        .build());
+            } catch (UnknownHostException ex) {
+                System.out.println("Failed to get localhost address");
+            }
         });
 
         final var connectPanel = new JPanel();
