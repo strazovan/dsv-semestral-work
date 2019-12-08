@@ -25,7 +25,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
     private final Client client;
     private final TopologyEntry ownTopologyEntry;
     private long myRequestTs;
-    private long maxRequestTs;
+    private volatile long maxRequestTs;
     private boolean inUse;
     private Map<TopologyEntry, Boolean> requests;
     private Map<TopologyEntry, Boolean> grants;
@@ -58,7 +58,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
             this.myRequestTs = this.maxRequestTs + 1;
         }
         this.topology.getAllOtherNodes().stream()
-                .filter(nodeId -> this.grants.get(nodeId))
+                .filter(nodeId -> !this.grants.get(nodeId))
                 .forEach(this::sendRequest);
 
         this.waitForAllGrants();
@@ -73,7 +73,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
      */
     private void waitForAllGrants() {
         logger.info("Waiting for all grands...");
-        while (this.grants.values().stream().anyMatch(granted -> !granted)) {
+        while (!this.grants.values().stream().allMatch(granted -> granted)) {
             try {
                 TimeUnit.MILLISECONDS.sleep(100);
             } catch (InterruptedException ex) {
@@ -150,6 +150,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
 
         final boolean delay;
         synchronized (_lock) {
+            this.maxRequestTs = Math.max(this.maxRequestTs, message.getRequestTimestamp());
             delay = message.getRequestTimestamp() > this.myRequestTs
                     || (message.getRequestTimestamp() == this.myRequestTs
                     && otherNode.compareTo(this.ownTopologyEntry) > 0);
@@ -161,7 +162,8 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
         }
 
         if (!(this.inUse || this.requests.get(this.ownTopologyEntry))
-                || (this.requests.get(this.ownTopologyEntry) && !this.grants.get(otherNode)) && !delay) {
+                || ((this.requests.get(this.ownTopologyEntry) && !this.grants.get(otherNode)) && !delay)) {
+            this.grants.put(otherNode, false);
             this.sendReply(otherNode);
         }
 
@@ -182,7 +184,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
     @Override
     public void onNewNode(TopologyEntry nodeId) {
         this.requests.put(nodeId, false);
-        this.grants.put(nodeId, true);
+        this.grants.put(nodeId, false);
     }
 
     @Override
