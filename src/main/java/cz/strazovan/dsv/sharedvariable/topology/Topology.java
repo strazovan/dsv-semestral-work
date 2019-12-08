@@ -5,6 +5,8 @@ import cz.strazovan.dsv.DeadNodeDiscovered;
 import cz.strazovan.dsv.RegisterNode;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageListener;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -12,6 +14,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 public class Topology implements MessageListener {
+
+
+    private static Logger logger = LoggerFactory.getLogger(Topology.class);
 
     private final String ownId;
     private final int ownPort;
@@ -45,11 +50,13 @@ public class Topology implements MessageListener {
     }
 
     private void addNode(TopologyEntry nodeId) {
+        logger.info("New node has registered " + nodeId);
         this.nodes.add(nodeId);
         this.listeners.forEach(listener -> listener.onNewNode(nodeId));
     }
 
     private void removeNode(TopologyEntry nodeId) {
+        logger.info("Node has disconnected " + nodeId);
         this.nodes.remove(nodeId);
         this.listeners.forEach(listener -> listener.onNodeRemoved(nodeId));
     }

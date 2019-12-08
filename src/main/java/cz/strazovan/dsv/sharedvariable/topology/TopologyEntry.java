@@ -57,6 +57,11 @@ public class TopologyEntry implements Comparable<TopologyEntry> {
                 .compare(this, other);
     }
 
+    @Override
+    public String toString() {
+        return address.getHostAddress() + ":" + port;
+    }
+
     // https://stackoverflow.com/questions/13756235/how-to-sort-ip-address-in-ascending-order
     public static class InetAddressComparator implements Comparator<InetAddress> {
         @Override
