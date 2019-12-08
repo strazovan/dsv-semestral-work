@@ -6,4 +6,5 @@ public interface MessageListener {
 
     void processMessage(AbstractMessage message);
 
+    void register(MessageQueue queue);
 }

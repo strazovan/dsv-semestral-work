@@ -116,6 +116,12 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
         }
     }
 
+    @Override
+    public void register(MessageQueue queue) {
+        queue.register(LockReply.class, this);
+        queue.register(LockRequest.class, this);
+    }
+
     private void handleLockRequest(LockRequest message) {
         final var id = message.getId();
         final var otherNode = new TopologyEntry(id.getIp(), id.getPort());
