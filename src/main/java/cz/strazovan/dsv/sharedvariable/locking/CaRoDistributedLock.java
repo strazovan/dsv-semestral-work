@@ -48,6 +48,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
 
     @Override
     public void lock() {
+        logger.info("Trying to acquire lock...");
         synchronized (_lock) {
             this.requests.put(this.ownTopologyEntry, true);
             this.myRequestTs = this.maxRequestTs + 1;
@@ -67,6 +68,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
      * Blocks until we get all grants we need to lock.
      */
     private void waitForAllGrants() {
+        logger.info("Waiting for all grands...");
         while (this.grants.values().stream().anyMatch(granted -> !granted)) {
             try {
                 TimeUnit.MILLISECONDS.sleep(100);
@@ -127,6 +129,8 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
         final var id = message.getId();
         final var otherNode = new TopologyEntry(id.getIp(), id.getPort());
 
+        logger.info("Received lock request from " + otherNode);
+
         final boolean delay;
         synchronized (_lock) {
             delay = message.getRequestTimestamp() > this.myRequestTs
@@ -154,6 +158,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
     private void handleLockReply(LockReply message) {
         final var id = message.getId();
         final var entry = new TopologyEntry(id.getIp(), id.getPort());
+        logger.info("Received lock reply from " + entry);
         this.grants.put(entry, true);
     }
 
