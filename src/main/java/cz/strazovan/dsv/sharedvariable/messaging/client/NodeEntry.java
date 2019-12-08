@@ -24,7 +24,9 @@ public class NodeEntry {
             this.send(((RegisterNode) abstractMessage));
         else if (abstractMessage instanceof RegisterNodeResponse)
             this.send(((RegisterNodeResponse) abstractMessage));
-        else if (abstractMessage instanceof DataChange)
+        else if (abstractMessage instanceof NewNode) {
+            this.send(((NewNode) abstractMessage));
+        } else if (abstractMessage instanceof DataChange)
             this.send(((DataChange) abstractMessage));
         else if (abstractMessage instanceof LockRequest)
             this.send(((LockRequest) abstractMessage));
@@ -38,27 +40,31 @@ public class NodeEntry {
 
     }
 
-    public void send(RegisterNode registerNode) {
+    private void send(RegisterNode registerNode) {
         this.stub.register(registerNode);
     }
 
-    public void send(RegisterNodeResponse registerNodeResponse) {
+    private void send(RegisterNodeResponse registerNodeResponse) {
         this.stub.registrationDone(registerNodeResponse);
     }
 
-    public void send(DataChange dataChange) {
+    private void send(NewNode newNode) {
+        this.stub.newNode(newNode);
+    }
+
+    private void send(DataChange dataChange) {
         this.stub.dataChange(dataChange);
     }
 
-    public void send(LockRequest lockRequest) {
+    private void send(LockRequest lockRequest) {
         this.stub.lockRequest(lockRequest);
     }
 
-    public void send(LockReply lockReply) {
+    private void send(LockReply lockReply) {
         this.stub.lockReply(lockReply);
     }
 
-    public void send(DeadNodeDiscovered deadNodeDiscovered) {
+    private void send(DeadNodeDiscovered deadNodeDiscovered) {
         this.stub.reportDeadNode(deadNodeDiscovered);
     }
 

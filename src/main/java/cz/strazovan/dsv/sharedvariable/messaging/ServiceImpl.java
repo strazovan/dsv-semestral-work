@@ -24,6 +24,11 @@ public class ServiceImpl extends SharedVariableServiceGrpc.SharedVariableService
     }
 
     @Override
+    public void newNode(NewNode request, StreamObserver<Empty> responseObserver) {
+        this.processMessage(request, responseObserver);
+    }
+
+    @Override
     public void dataChange(DataChange request, StreamObserver<Empty> responseObserver) {
         this.processMessage(request, responseObserver);
     }

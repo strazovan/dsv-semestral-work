@@ -37,6 +37,8 @@ public class Main {
         final var client = new Client();
         client.start();
         topology.registerListener(client);
+        topology.setClient(client);
+
 
         final var lock = new CaRoDistributedLock(topology, client);
         lock.register(messageQueue);
@@ -53,13 +55,14 @@ public class Main {
             lock.unlock();
         });
 
-        final var hostnameBox = new JTextField("IP");
+        final var hostnameBox = new JTextField("");
         hostnameBox.setPreferredSize(new Dimension(50, 20));
         final var portBox = new JTextField("port");
         portBox.setPreferredSize(new Dimension(50, 20));
         final var connectButton = new JButton("Connect");
         connectButton.addActionListener(e -> {
-            final var to = new TopologyEntry(hostnameBox.getText(), Integer.parseInt(portBox.getText()));
+            final var targetHostname = hostnameBox.getText().isEmpty() ? "127.0.0.1" : hostnameBox.getText();
+            final var to = new TopologyEntry(targetHostname, Integer.parseInt(portBox.getText()));
             try {
                 client.sendMessage(to, RegisterNode.newBuilder()
                         .setNodeId(NodeId.newBuilder()

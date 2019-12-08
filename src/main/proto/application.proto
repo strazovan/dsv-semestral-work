@@ -12,6 +12,10 @@ message RegisterNode {
     NodeId nodeId = 1;
 }
 
+message NewNode {
+    NodeId nodeId = 1;
+}
+
 message RegisterNodeResponse {
     repeated NodeId id = 1;
 }
@@ -41,6 +45,7 @@ message NodeId {
 service SharedVariableService {
     rpc register (RegisterNode) returns (Empty);
     rpc registrationDone (RegisterNodeResponse) returns (Empty);
+    rpc newNode (NewNode) returns (Empty);
     rpc dataChange (DataChange) returns (Empty);
     rpc lockRequest (LockRequest) returns (Empty);
     rpc lockReply (LockReply) returns (Empty);
