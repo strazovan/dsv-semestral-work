@@ -3,8 +3,10 @@ package cz.strazovan.dsv.sharedvariable.locking;
 import com.google.protobuf.AbstractMessage;
 import cz.strazovan.dsv.LockReply;
 import cz.strazovan.dsv.LockRequest;
+import cz.strazovan.dsv.NodeId;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageListener;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
+import cz.strazovan.dsv.sharedvariable.messaging.client.Client;
 import cz.strazovan.dsv.sharedvariable.topology.Topology;
 import cz.strazovan.dsv.sharedvariable.topology.TopologyChangeListener;
 import cz.strazovan.dsv.sharedvariable.topology.TopologyEntry;
@@ -20,6 +22,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
     private static Logger logger = LoggerFactory.getLogger(CaRoDistributedLock.class);
 
     private final Topology topology;
+    private final Client client;
     private final TopologyEntry ownTopologyEntry;
     private long myRequestTs;
     private long maxRequestTs;
@@ -29,9 +32,10 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
 
     private static final Object _lock = new Object(); // just simple lock, we don't need ReentrantReadWriteLock here
 
-    public CaRoDistributedLock(Topology topology) {
+    public CaRoDistributedLock(Topology topology, Client client) {
         this.topology = topology;
         this.ownTopologyEntry = this.topology.getOwnTopologyEntry();
+        this.client = client;
         this.init();
         this.topology.registerListener(this);
 
@@ -101,11 +105,24 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
 
 
     private void sendRequest(TopologyEntry nodeId) {
-        // TODO
+        final var message = LockRequest.newBuilder()
+                .setId(NodeId.newBuilder()
+                        .setIp(this.ownTopologyEntry.getAddressAsString())
+                        .setPort(this.ownTopologyEntry.getPort())
+                        .build())
+                .setRequestTimestamp(this.myRequestTs)
+                .build();
+        this.client.sendMessage(nodeId, message);
     }
 
     private void sendReply(TopologyEntry nodeId) {
-        // TODO
+        final var message = LockReply.newBuilder()
+                .setId(NodeId.newBuilder()
+                        .setIp(this.ownTopologyEntry.getAddressAsString())
+                        .setPort(this.ownTopologyEntry.getPort())
+                        .build())
+                .build();
+        this.client.sendMessage(nodeId, message);
     }
 
     @Override

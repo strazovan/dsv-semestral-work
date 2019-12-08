@@ -28,8 +28,6 @@ public class Main {
 
         final var topology = new Topology("127.0.0.1", port);
         topology.register(messageQueue);
-        final var lock = new CaRoDistributedLock(topology);
-        lock.register(messageQueue);
 
         final var server = new Server(port, messageQueue);
         server.start();
@@ -37,6 +35,9 @@ public class Main {
         final var client = new Client();
         client.start();
         topology.registerListener(client);
+
+        final var lock = new CaRoDistributedLock(topology, client);
+        lock.register(messageQueue);
 
         final var frame = new JFrame();
 
