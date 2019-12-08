@@ -96,8 +96,8 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
         logger.info("Lock freed...");
         this.topology.getAllOtherNodes().forEach(nodeId -> {
             if (this.requests.get(nodeId)) {
-                this.requests.put(nodeId, false);
-                this.grants.put(nodeId, false);
+                this.requests.computeIfPresent(nodeId, (entry, grant) -> false);
+                this.grants.computeIfPresent(nodeId, (entry, grant) -> false);
                 this.sendReply(nodeId);
             }
         });
@@ -158,17 +158,17 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
         }
 
         if (this.inUse || (this.requests.get(this.ownTopologyEntry) && delay)) {
-            this.requests.put(otherNode, true);
+            this.requests.computeIfPresent(otherNode, (entry, grant) -> true);
         }
 
         if (!(this.inUse || this.requests.get(this.ownTopologyEntry))
                 || ((this.requests.get(this.ownTopologyEntry) && !this.grants.get(otherNode)) && !delay)) {
-            this.grants.put(otherNode, false);
+            this.grants.computeIfPresent(otherNode, (entry, grant) -> false);
             this.sendReply(otherNode);
         }
 
         if (this.requests.get(this.ownTopologyEntry) && this.grants.get(otherNode) && !delay) {
-            this.grants.put(otherNode, false);
+            this.grants.computeIfPresent(otherNode, (entry, grant) -> false);
             this.sendReply(otherNode);
             this.sendRequest(otherNode);
         }
@@ -178,7 +178,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
         final var id = message.getId();
         final var entry = new TopologyEntry(id.getIp(), id.getPort());
         logger.info("Received lock reply from " + entry);
-        this.grants.put(entry, true);
+        this.grants.computeIfPresent(entry, (e, grant) -> true);
     }
 
     @Override
