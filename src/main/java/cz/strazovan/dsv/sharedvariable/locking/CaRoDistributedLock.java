@@ -4,9 +4,12 @@ import com.google.protobuf.AbstractMessage;
 import cz.strazovan.dsv.LockReply;
 import cz.strazovan.dsv.LockRequest;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageListener;
+import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
 import cz.strazovan.dsv.sharedvariable.topology.Topology;
 import cz.strazovan.dsv.sharedvariable.topology.TopologyChangeListener;
 import cz.strazovan.dsv.sharedvariable.topology.TopologyEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 public class CaRoDistributedLock implements DistributedLock, TopologyChangeListener, MessageListener {
 
+    private static Logger logger = LoggerFactory.getLogger(CaRoDistributedLock.class);
 
     private final Topology topology;
     private final TopologyEntry ownTopologyEntry;
@@ -54,6 +58,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
         this.waitForAllGrants();
 
         this.requests.put(this.ownTopologyEntry, false);
+        logger.info("Lock acquired...");
         this.inUse = true;
     }
 
@@ -81,6 +86,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
     public void unlock() {
         if (!this.inUse) throw new IllegalStateException("Calling unlock when not locked");
         this.inUse = false;
+        logger.info("Lock freed...");
         this.topology.getAllOtherNodes().forEach(nodeId -> {
             if (this.requests.get(nodeId)) {
                 this.requests.put(nodeId, false);
