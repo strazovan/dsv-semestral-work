@@ -1,8 +1,13 @@
 package cz.strazovan.dsv.sharedvariable;
 
+import cz.strazovan.dsv.sharedvariable.locking.CaRoDistributedLock;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
 import cz.strazovan.dsv.sharedvariable.messaging.ServiceImpl;
+import cz.strazovan.dsv.sharedvariable.server.Server;
+import cz.strazovan.dsv.sharedvariable.topology.Topology;
 import io.grpc.ServerBuilder;
+
+import java.util.Objects;
 
 public class Main {
 
@@ -18,18 +23,16 @@ public class Main {
         final var messageQueue = new MessageQueue();
         messageQueue.start();
 
-        final var service = new ServiceImpl(messageQueue);
+        final var topology = new Topology("127.0.0.1", port);
+        final var lock = new CaRoDistributedLock(topology);
+        lock.register(messageQueue);
 
-        final var server = ServerBuilder.forPort(port)
-                .addService(service)
-                .build();
-        try {
-            server.start();
-            server.awaitTermination();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex); // todo logger
-        }
+        final var server = new Server(port, messageQueue);
+        server.start();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(messageQueue::stop));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            messageQueue.stop();
+            server.stop();
+        }));
     }
 }
