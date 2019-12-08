@@ -31,9 +31,10 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
 
     public CaRoDistributedLock(Topology topology) {
         this.topology = topology;
+        this.ownTopologyEntry = this.topology.getOwnTopologyEntry();
         this.init();
         this.topology.registerListener(this);
-        this.ownTopologyEntry = this.topology.getOwnTopologyEntry();
+
     }
 
     private void init() {
