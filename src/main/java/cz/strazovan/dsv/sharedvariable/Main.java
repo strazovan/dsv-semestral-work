@@ -25,10 +25,18 @@ public class Main {
             port = Integer.parseInt(args[0]);
         }
 
+        final String localhostAddress;
+        try {
+            localhostAddress = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException ex) {
+            throw new RuntimeException("Failed to start.", ex);
+        }
+
+
         final var messageQueue = new MessageQueue();
         messageQueue.start();
 
-        final var topology = new Topology("127.0.0.1", port);
+        final var topology = new Topology(localhostAddress, port);
         topology.register(messageQueue);
 
         final var server = new Server(port, messageQueue);
@@ -61,18 +69,15 @@ public class Main {
         portBox.setPreferredSize(new Dimension(50, 20));
         final var connectButton = new JButton("Connect");
         connectButton.addActionListener(e -> {
-            final var targetHostname = hostnameBox.getText().isEmpty() ? "127.0.0.1" : hostnameBox.getText();
+            final var targetHostname = hostnameBox.getText().isEmpty() ? localhostAddress : hostnameBox.getText();
             final var to = new TopologyEntry(targetHostname, Integer.parseInt(portBox.getText()));
-            try {
-                client.sendMessage(to, RegisterNode.newBuilder()
-                        .setNodeId(NodeId.newBuilder()
-                                .setIp(InetAddress.getLocalHost().getHostAddress())
-                                .setPort(port)
-                                .build())
-                        .build());
-            } catch (UnknownHostException ex) {
-                System.out.println("Failed to get localhost address");
-            }
+            client.sendMessage(to, RegisterNode.newBuilder()
+                    .setNodeId(NodeId.newBuilder()
+                            .setIp(localhostAddress)
+                            .setPort(port)
+                            .build())
+                    .build());
+
         });
 
         final var connectPanel = new JPanel();
