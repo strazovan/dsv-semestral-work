@@ -39,7 +39,7 @@ public class Server implements Component, Runnable {
         this.gRPCServer.shutdownNow();
         this.serverExecutor.shutdownNow();
         try {
-            this.serverExecutor.awaitTermination(10, TimeUnit.SECONDS);
+            this.serverExecutor.awaitTermination(3, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
             logger.warn("Server shutdown was interrupted.", ex);
         }

@@ -58,7 +58,7 @@ public class MessageQueue implements Runnable, Component {
         logger.info("Message queue is stopping...");
         this.notificationsService.shutdownNow();
         try {
-            this.notificationsService.awaitTermination(10, TimeUnit.SECONDS);
+            this.notificationsService.awaitTermination(3, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
             logger.warn("Notification service shutdown was interrupted.", ex);
         }
