@@ -104,7 +104,6 @@ public class Main {
         mainPanel.setLayout(mainLayout);
         final var topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
-        topPanel.add(new JLabel("Own topology entry: " + topology.getOwnTopologyEntry()));
         topPanel.add(lockButton);
         topPanel.add(unlockButton);
         topPanel.add(connectPanel);
@@ -113,9 +112,12 @@ public class Main {
         final var topologyPanel = new JPanel();
         topologyPanel.setLayout(new BoxLayout(topologyPanel, BoxLayout.Y_AXIS));
         topologyPanel.add(new JLabel("Topology"));
+        final JLabel ownTopologyEntry = new JLabel("Own entry: " + topology.getOwnTopologyEntry());
+        ownTopologyEntry.setFont(ownTopologyEntry.getFont().deriveFont(Font.BOLD));
+        topologyPanel.add(ownTopologyEntry);
         topologyPanel.add(new JScrollPane(topologyList));
         topologyList.setBorder(LineBorder.createBlackLineBorder());
-        topologyPanel.setPreferredSize(new Dimension(200, 500));
+        topologyPanel.setPreferredSize(new Dimension(200, 450));
         mainPanel.add(topologyPanel, BorderLayout.EAST);
 
         frame.add(mainPanel);
