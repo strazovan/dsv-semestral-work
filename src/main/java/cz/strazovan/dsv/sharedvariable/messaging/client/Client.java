@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class Client implements Component, TopologyChangeListener {
 
@@ -22,10 +23,12 @@ public class Client implements Component, TopologyChangeListener {
 
     private final List<ManagedChannel> channels;
     private final Map<TopologyEntry, NodeEntry> nodes;
+    private final Consumer<TopologyEntry> deadNodeCallback;
 
-    public Client() {
+    public Client(Consumer<TopologyEntry> deadNodeCallback) {
         this.channels = new LinkedList<>();
         this.nodes = new LinkedHashMap<>();
+        this.deadNodeCallback = deadNodeCallback;
     }
 
     public void broadcast(AbstractMessage message) {
@@ -40,6 +43,7 @@ public class Client implements Component, TopologyChangeListener {
         } catch (StatusRuntimeException ex) {
             if (ex.getStatus().getCode() == Status.Code.UNAVAILABLE) {
                 logger.error("Dead node detected (" + to + ")");
+                this.deadNodeCallback.accept(to);
             } else
                 logger.error("An error has occurred while sending the message", ex);
         }

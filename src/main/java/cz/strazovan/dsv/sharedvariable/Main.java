@@ -42,7 +42,7 @@ public class Main {
         final var server = new Server(port, messageQueue);
         server.start();
 
-        final var client = new Client();
+        final var client = new Client(topology::reportDeadNode);
         client.start();
         topology.registerListener(client);
         topology.setClient(client);

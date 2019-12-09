@@ -51,6 +51,10 @@ public class Topology implements MessageListener {
         return Set.copyOf(this.nodes);
     }
 
+    public void reportDeadNode(TopologyEntry entry) {
+        this.removeNode(entry);
+    }
+
     private void addNode(TopologyEntry nodeId) {
         if (nodeId.equals(this.ownTopologyEntry)) // there is no point in registering ourselves
             return;
