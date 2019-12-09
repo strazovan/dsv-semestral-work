@@ -17,6 +17,7 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.CompletableFuture;
 
 public class Main {
 
@@ -64,14 +65,31 @@ public class Main {
 
         final var frame = new JFrame();
 
+        final var textArea = new JTextArea();
+        textArea.setFont(textArea.getFont().deriveFont(16f));
+        textArea.setLineWrap(true);
+        textArea.setEditable(false);
+
         final var lockButton = new JButton("Lock");
-        lockButton.addActionListener(e -> {
-            lock.lock();
-        });
+
 
         final var unlockButton = new JButton("Unlock");
         unlockButton.addActionListener(e -> {
-            lock.unlock();
+            unlockButton.setEnabled(false);
+            textArea.setEditable(false);
+            CompletableFuture.runAsync(lock::unlock)
+                    .thenRun(() -> SwingUtilities.invokeLater(() -> lockButton.setEnabled(true)));
+        });
+        unlockButton.setEnabled(false);
+
+        lockButton.addActionListener(e -> {
+            lockButton.setEnabled(false);
+            CompletableFuture.runAsync(lock::lock)
+                    .thenRun(() -> SwingUtilities.invokeLater(() -> {
+                        unlockButton.setEnabled(true);
+                        textArea.setEditable(true);
+                    }));
+
         });
 
         final var hostnameBox = new JTextField("");
@@ -120,10 +138,7 @@ public class Main {
         topologyList.setBorder(LineBorder.createBlackLineBorder());
         topologyPanel.setPreferredSize(new Dimension(200, 450));
         mainPanel.add(topologyPanel, BorderLayout.EAST);
-        final var textArea = new JTextArea();
-        textArea.setFont(textArea.getFont().deriveFont(16f));
-        textArea.setLineWrap(true);
-        textArea.setEditable(false);
+
 
         mainPanel.add(textArea, BorderLayout.CENTER);
         final var statusBar = new StatusBar();
