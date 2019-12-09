@@ -8,6 +8,8 @@ import cz.strazovan.dsv.sharedvariable.messaging.client.Client;
 import cz.strazovan.dsv.sharedvariable.messaging.server.Server;
 import cz.strazovan.dsv.sharedvariable.topology.Topology;
 import cz.strazovan.dsv.sharedvariable.topology.TopologyEntry;
+import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyList;
+import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyListModel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,6 +34,13 @@ public class Main {
             throw new RuntimeException("Failed to start.", ex);
         }
 
+
+        try {
+            UIManager.setLookAndFeel(
+                    UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+            throw new RuntimeException("Failed to set system look and feel.", e);
+        }
 
         final var messageQueue = new MessageQueue();
         messageQueue.start();
@@ -85,11 +94,16 @@ public class Main {
         connectPanel.add(portBox);
         connectPanel.add(connectButton);
 
+        final var topologyListModel = new TopologyListModel();
+        topology.registerListener(topologyListModel);
+        final var topologyList = new TopologyList(topologyListModel);
+
         final var mainPanel = new JPanel();
         mainPanel.add(new JLabel("Own topology entry: " + topology.getOwnTopologyEntry()));
         mainPanel.add(lockButton);
         mainPanel.add(unlockButton);
         mainPanel.add(connectPanel);
+        mainPanel.add(topologyList);
 
         frame.add(mainPanel);
 
