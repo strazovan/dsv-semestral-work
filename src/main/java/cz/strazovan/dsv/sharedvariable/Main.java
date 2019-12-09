@@ -12,6 +12,7 @@ import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyList;
 import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyListModel;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -99,11 +100,23 @@ public class Main {
         final var topologyList = new TopologyList(topologyListModel);
 
         final var mainPanel = new JPanel();
-        mainPanel.add(new JLabel("Own topology entry: " + topology.getOwnTopologyEntry()));
-        mainPanel.add(lockButton);
-        mainPanel.add(unlockButton);
-        mainPanel.add(connectPanel);
-        mainPanel.add(topologyList);
+        final var mainLayout = new BorderLayout();
+        mainPanel.setLayout(mainLayout);
+        final var topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
+        topPanel.add(new JLabel("Own topology entry: " + topology.getOwnTopologyEntry()));
+        topPanel.add(lockButton);
+        topPanel.add(unlockButton);
+        topPanel.add(connectPanel);
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+
+        final var topologyPanel = new JPanel();
+        topologyPanel.setLayout(new BoxLayout(topologyPanel, BoxLayout.Y_AXIS));
+        topologyPanel.add(new JLabel("Topology"));
+        topologyPanel.add(new JScrollPane(topologyList));
+        topologyList.setBorder(LineBorder.createBlackLineBorder());
+        topologyPanel.setPreferredSize(new Dimension(200, 500));
+        mainPanel.add(topologyPanel, BorderLayout.EAST);
 
         frame.add(mainPanel);
 
