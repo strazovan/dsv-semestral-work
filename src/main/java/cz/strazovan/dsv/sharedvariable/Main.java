@@ -8,6 +8,7 @@ import cz.strazovan.dsv.sharedvariable.messaging.client.Client;
 import cz.strazovan.dsv.sharedvariable.messaging.server.Server;
 import cz.strazovan.dsv.sharedvariable.topology.Topology;
 import cz.strazovan.dsv.sharedvariable.topology.TopologyEntry;
+import cz.strazovan.dsv.sharedvariable.ui.StatusBar;
 import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyList;
 import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyListModel;
 
@@ -119,7 +120,15 @@ public class Main {
         topologyList.setBorder(LineBorder.createBlackLineBorder());
         topologyPanel.setPreferredSize(new Dimension(200, 450));
         mainPanel.add(topologyPanel, BorderLayout.EAST);
+        final var textArea = new JTextArea();
+        textArea.setFont(textArea.getFont().deriveFont(16f));
+        textArea.setLineWrap(true);
+        textArea.setEditable(false);
 
+        mainPanel.add(textArea, BorderLayout.CENTER);
+        final var statusBar = new StatusBar();
+        statusBar.setPreferredSize(new Dimension(600, 25));
+        mainPanel.add(statusBar, BorderLayout.SOUTH);
         frame.add(mainPanel);
 
         frame.setName("Distributed todo list");
