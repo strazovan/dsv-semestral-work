@@ -54,6 +54,15 @@ public class Topology implements MessageListener {
 
     public void reportDeadNode(TopologyEntry entry) {
         this.removeNode(entry);
+        this.client.broadcast(
+                DeadNodeDiscovered.newBuilder()
+                .setTime(Clock.INSTANCE.tick())
+                .setId(NodeId.newBuilder()
+                        .setIp(entry.getAddressAsString())
+                        .setPort(entry.getPort())
+                        .build())
+                .build()
+        );
     }
 
     private void addNode(TopologyEntry nodeId) {

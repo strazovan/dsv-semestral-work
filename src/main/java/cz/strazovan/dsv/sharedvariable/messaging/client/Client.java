@@ -76,7 +76,7 @@ public class Client implements Component, TopologyChangeListener {
 
     @Override
     public void onNodeRemoved(TopologyEntry nodeId) {
-        final var entry = this.nodes.get(nodeId);
+        final var entry = this.nodes.remove(nodeId);
         entry.shutdown();
         this.channels.remove(entry.getChannel());
     }
