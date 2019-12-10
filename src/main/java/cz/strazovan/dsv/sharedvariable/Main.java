@@ -1,5 +1,6 @@
 package cz.strazovan.dsv.sharedvariable;
 
+import cz.strazovan.dsv.DataChange;
 import cz.strazovan.dsv.NodeId;
 import cz.strazovan.dsv.RegisterNode;
 import cz.strazovan.dsv.sharedvariable.clock.Clock;
@@ -9,6 +10,7 @@ import cz.strazovan.dsv.sharedvariable.messaging.client.Client;
 import cz.strazovan.dsv.sharedvariable.messaging.server.Server;
 import cz.strazovan.dsv.sharedvariable.topology.Topology;
 import cz.strazovan.dsv.sharedvariable.topology.TopologyEntry;
+import cz.strazovan.dsv.sharedvariable.ui.SharedTextArea;
 import cz.strazovan.dsv.sharedvariable.ui.StatusBar;
 import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyList;
 import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyListModel;
@@ -64,19 +66,23 @@ public class Main {
         final var lock = new CaRoDistributedLock(topology, client);
         lock.register(messageQueue);
 
+        // TODO refactor UI definition, this is just for getting things done and make something i can test
         final var frame = new JFrame();
 
-        final var textArea = new JTextArea();
+        final var textArea = new SharedTextArea();
         textArea.setFont(textArea.getFont().deriveFont(16f));
         textArea.setLineWrap(true);
         textArea.setEditable(false);
+        textArea.register(messageQueue);
 
         final var lockButton = new JButton("Lock");
-
-
         final var unlockButton = new JButton("Unlock");
+        final var saveButton = new JButton("Save");
+        saveButton.setEnabled(false);
+
         unlockButton.addActionListener(e -> {
             unlockButton.setEnabled(false);
+            saveButton.setEnabled(false);
             textArea.setEditable(false);
             CompletableFuture.runAsync(lock::unlock)
                     .thenRun(() -> SwingUtilities.invokeLater(() -> lockButton.setEnabled(true)));
@@ -88,9 +94,19 @@ public class Main {
             CompletableFuture.runAsync(lock::lock)
                     .thenRun(() -> SwingUtilities.invokeLater(() -> {
                         unlockButton.setEnabled(true);
+                        saveButton.setEnabled(true);
                         textArea.setEditable(true);
                     }));
 
+        });
+
+        saveButton.addActionListener(e -> {
+            CompletableFuture.runAsync(() -> {
+                client.broadcast(DataChange.newBuilder()
+                        .setTime(Clock.INSTANCE.tick())
+                        .setData(textArea.getText())
+                        .build());
+            });
         });
 
         final var hostnameBox = new JTextField("");
@@ -127,6 +143,7 @@ public class Main {
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
         topPanel.add(lockButton);
         topPanel.add(unlockButton);
+        topPanel.add(saveButton);
         topPanel.add(connectPanel);
         mainPanel.add(topPanel, BorderLayout.NORTH);
 
