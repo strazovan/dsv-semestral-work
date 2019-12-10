@@ -2,6 +2,7 @@ package cz.strazovan.dsv.sharedvariable.topology;
 
 import com.google.protobuf.AbstractMessage;
 import cz.strazovan.dsv.*;
+import cz.strazovan.dsv.sharedvariable.clock.Clock;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageListener;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
 import cz.strazovan.dsv.sharedvariable.messaging.client.Client;
@@ -103,6 +104,7 @@ public class Topology implements MessageListener {
                         .setIp(node.getAddressAsString())
                         .setPort(node.getPort())
                         .build())
+                .setTime(Clock.INSTANCE.tick())
                 .build();
         this.client.broadcast(message);
     }
@@ -116,6 +118,7 @@ public class Topology implements MessageListener {
                 .build());
         final var reply = RegisterNodeResponse.newBuilder()
                 .addAllId(nodesToSend)
+                .setTime(Clock.INSTANCE.tick())
                 .build();
         this.client.sendMessage(node, reply);
     }

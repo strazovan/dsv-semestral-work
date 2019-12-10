@@ -4,6 +4,7 @@ import com.google.protobuf.AbstractMessage;
 import cz.strazovan.dsv.LockReply;
 import cz.strazovan.dsv.LockRequest;
 import cz.strazovan.dsv.NodeId;
+import cz.strazovan.dsv.sharedvariable.clock.Clock;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageListener;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
 import cz.strazovan.dsv.sharedvariable.messaging.client.Client;
@@ -111,6 +112,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
                         .setPort(this.ownTopologyEntry.getPort())
                         .build())
                 .setRequestTimestamp(this.myRequestTs)
+                .setTime(Clock.INSTANCE.tick())
                 .build();
         this.client.sendMessage(nodeId, message);
     }
@@ -121,6 +123,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
                         .setIp(this.ownTopologyEntry.getAddressAsString())
                         .setPort(this.ownTopologyEntry.getPort())
                         .build())
+                .setTime(Clock.INSTANCE.tick())
                 .build();
         this.client.sendMessage(nodeId, message);
     }

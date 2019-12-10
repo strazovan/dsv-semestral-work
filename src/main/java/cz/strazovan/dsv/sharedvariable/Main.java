@@ -2,6 +2,7 @@ package cz.strazovan.dsv.sharedvariable;
 
 import cz.strazovan.dsv.NodeId;
 import cz.strazovan.dsv.RegisterNode;
+import cz.strazovan.dsv.sharedvariable.clock.Clock;
 import cz.strazovan.dsv.sharedvariable.locking.CaRoDistributedLock;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
 import cz.strazovan.dsv.sharedvariable.messaging.client.Client;
@@ -105,6 +106,7 @@ public class Main {
                             .setIp(localhostAddress)
                             .setPort(port)
                             .build())
+                    .setTime(Clock.INSTANCE.tick())
                     .build());
 
         });
@@ -132,11 +134,15 @@ public class Main {
         topologyPanel.setLayout(new BoxLayout(topologyPanel, BoxLayout.Y_AXIS));
         topologyPanel.add(new JLabel("Topology"));
         final JLabel ownTopologyEntry = new JLabel("Own entry: " + topology.getOwnTopologyEntry());
+        final JLabel currentTime = new JLabel("Current time is: " + Clock.INSTANCE.getCurrentTime());
+        Clock.INSTANCE.registerClockListener(tick -> currentTime.setText("Current time is: " + tick));
+
         ownTopologyEntry.setFont(ownTopologyEntry.getFont().deriveFont(Font.BOLD));
         topologyPanel.add(ownTopologyEntry);
+        topologyPanel.add(currentTime);
         topologyPanel.add(new JScrollPane(topologyList));
         topologyList.setBorder(LineBorder.createBlackLineBorder());
-        topologyPanel.setPreferredSize(new Dimension(200, 450));
+        topologyPanel.setPreferredSize(new Dimension(200, 400));
         mainPanel.add(topologyPanel, BorderLayout.EAST);
 
 
