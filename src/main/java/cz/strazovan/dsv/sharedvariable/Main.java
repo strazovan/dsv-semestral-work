@@ -142,7 +142,7 @@ public class Main {
         topologyPanel.add(currentTime);
         topologyPanel.add(new JScrollPane(topologyList));
         topologyList.setBorder(LineBorder.createBlackLineBorder());
-        topologyPanel.setPreferredSize(new Dimension(200, 400));
+        topologyPanel.setPreferredSize(new Dimension(300, 400));
         mainPanel.add(topologyPanel, BorderLayout.EAST);
 
 
@@ -153,7 +153,7 @@ public class Main {
         frame.add(mainPanel);
 
         frame.setName("Distributed todo list");
-        frame.setSize(600, 600);
+        frame.setSize(700, 600);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
