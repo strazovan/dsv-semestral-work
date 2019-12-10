@@ -2,12 +2,11 @@ package cz.strazovan.dsv.sharedvariable;
 
 import cz.strazovan.dsv.sharedvariable.clock.Clock;
 import cz.strazovan.dsv.sharedvariable.locking.CaRoDistributedLock;
-import cz.strazovan.dsv.sharedvariable.messaging.MessageFactory;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
 import cz.strazovan.dsv.sharedvariable.messaging.client.Client;
 import cz.strazovan.dsv.sharedvariable.messaging.server.Server;
 import cz.strazovan.dsv.sharedvariable.topology.Topology;
-import cz.strazovan.dsv.sharedvariable.topology.TopologyEntry;
+import cz.strazovan.dsv.sharedvariable.ui.ApplicationController;
 import cz.strazovan.dsv.sharedvariable.ui.SharedTextArea;
 import cz.strazovan.dsv.sharedvariable.ui.StatusBar;
 import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyList;
@@ -18,7 +17,6 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.concurrent.CompletableFuture;
 
 public class Main {
 
@@ -66,51 +64,43 @@ public class Main {
 
         // TODO refactor UI definition, this is just for getting things done and make something i can test
         final var frame = new JFrame();
+        final var appController = new ApplicationController(localhostAddress, port);
+        topology.registerListener(appController);
+        appController.setClient(client);
+        appController.setLock(lock);
 
         final var textArea = new SharedTextArea();
         textArea.setFont(textArea.getFont().deriveFont(16f));
         textArea.setLineWrap(true);
         textArea.setEditable(false);
         textArea.register(messageQueue);
+        appController.setSharedTextArea(textArea);
 
         final var lockButton = new JButton("Lock");
         final var unlockButton = new JButton("Unlock");
         final var saveButton = new JButton("Save");
+
+        appController.setLockButton(lockButton);
+        appController.setUnlockButton(unlockButton);
+        appController.setSaveButton(saveButton);
         saveButton.setEnabled(false);
 
-        unlockButton.addActionListener(e -> {
-            unlockButton.setEnabled(false);
-            saveButton.setEnabled(false);
-            textArea.setEditable(false);
-            CompletableFuture.runAsync(lock::unlock)
-                    .thenRun(() -> SwingUtilities.invokeLater(() -> lockButton.setEnabled(true)));
-        });
+        unlockButton.addActionListener(e -> appController.unlock());
         unlockButton.setEnabled(false);
 
-        lockButton.addActionListener(e -> {
-            lockButton.setEnabled(false);
-            CompletableFuture.runAsync(lock::lock)
-                    .thenRun(() -> SwingUtilities.invokeLater(() -> {
-                        unlockButton.setEnabled(true);
-                        saveButton.setEnabled(true);
-                        textArea.setEditable(true);
-                    }));
+        lockButton.addActionListener(e -> appController.lock());
 
-        });
-
-        saveButton.addActionListener(e ->
-                CompletableFuture.runAsync(() ->
-                        client.broadcast(MessageFactory.createDataChangeMessage(textArea.getText()))));
+        saveButton.addActionListener(e -> appController.save());
 
         final var hostnameBox = new JTextField("");
         hostnameBox.setPreferredSize(new Dimension(50, 20));
+        appController.setHostnameBox(hostnameBox);
         final var portBox = new JTextField("port");
         portBox.setPreferredSize(new Dimension(50, 20));
+        appController.setPortBox(portBox);
         final var connectButton = new JButton("Connect");
         connectButton.addActionListener(e -> {
-            final var targetHostname = hostnameBox.getText().isEmpty() ? localhostAddress : hostnameBox.getText();
-            final var to = new TopologyEntry(targetHostname, Integer.parseInt(portBox.getText()));
-            client.sendMessage(to, MessageFactory.createRegisterNodeMessage(localhostAddress, port));
+          appController.connect();
         });
 
         final var connectPanel = new JPanel();
@@ -119,7 +109,7 @@ public class Main {
         connectPanel.add(connectButton);
 
         final var topologyListModel = new TopologyListModel();
-        topology.registerListener(topologyListModel);
+        appController.setTopologyListModel(topologyListModel);
         final var topologyList = new TopologyList(topologyListModel);
 
         final var mainPanel = new JPanel();
