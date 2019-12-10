@@ -3,8 +3,7 @@ package cz.strazovan.dsv.sharedvariable.locking;
 import com.google.protobuf.AbstractMessage;
 import cz.strazovan.dsv.LockReply;
 import cz.strazovan.dsv.LockRequest;
-import cz.strazovan.dsv.NodeId;
-import cz.strazovan.dsv.sharedvariable.clock.Clock;
+import cz.strazovan.dsv.sharedvariable.messaging.MessageFactory;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageListener;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
 import cz.strazovan.dsv.sharedvariable.messaging.client.Client;
@@ -106,25 +105,12 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
 
 
     private void sendRequest(TopologyEntry nodeId) {
-        final var message = LockRequest.newBuilder()
-                .setId(NodeId.newBuilder()
-                        .setIp(this.ownTopologyEntry.getAddressAsString())
-                        .setPort(this.ownTopologyEntry.getPort())
-                        .build())
-                .setRequestTimestamp(this.myRequestTs)
-                .setTime(Clock.INSTANCE.tick())
-                .build();
+        final var message = MessageFactory.createLockRequestMessage(this.ownTopologyEntry, this.myRequestTs);
         this.client.sendMessage(nodeId, message);
     }
 
     private void sendReply(TopologyEntry nodeId) {
-        final var message = LockReply.newBuilder()
-                .setId(NodeId.newBuilder()
-                        .setIp(this.ownTopologyEntry.getAddressAsString())
-                        .setPort(this.ownTopologyEntry.getPort())
-                        .build())
-                .setTime(Clock.INSTANCE.tick())
-                .build();
+        final var message = MessageFactory.createLockReplyMessage(this.ownTopologyEntry);
         this.client.sendMessage(nodeId, message);
     }
 

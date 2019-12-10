@@ -1,10 +1,8 @@
 package cz.strazovan.dsv.sharedvariable;
 
-import cz.strazovan.dsv.DataChange;
-import cz.strazovan.dsv.NodeId;
-import cz.strazovan.dsv.RegisterNode;
 import cz.strazovan.dsv.sharedvariable.clock.Clock;
 import cz.strazovan.dsv.sharedvariable.locking.CaRoDistributedLock;
+import cz.strazovan.dsv.sharedvariable.messaging.MessageFactory;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
 import cz.strazovan.dsv.sharedvariable.messaging.client.Client;
 import cz.strazovan.dsv.sharedvariable.messaging.server.Server;
@@ -100,14 +98,9 @@ public class Main {
 
         });
 
-        saveButton.addActionListener(e -> {
-            CompletableFuture.runAsync(() -> {
-                client.broadcast(DataChange.newBuilder()
-                        .setTime(Clock.INSTANCE.tick())
-                        .setData(textArea.getText())
-                        .build());
-            });
-        });
+        saveButton.addActionListener(e ->
+                CompletableFuture.runAsync(() ->
+                        client.broadcast(MessageFactory.createDataChangeMessage(textArea.getText()))));
 
         final var hostnameBox = new JTextField("");
         hostnameBox.setPreferredSize(new Dimension(50, 20));
@@ -117,14 +110,7 @@ public class Main {
         connectButton.addActionListener(e -> {
             final var targetHostname = hostnameBox.getText().isEmpty() ? localhostAddress : hostnameBox.getText();
             final var to = new TopologyEntry(targetHostname, Integer.parseInt(portBox.getText()));
-            client.sendMessage(to, RegisterNode.newBuilder()
-                    .setNodeId(NodeId.newBuilder()
-                            .setIp(localhostAddress)
-                            .setPort(port)
-                            .build())
-                    .setTime(Clock.INSTANCE.tick())
-                    .build());
-
+            client.sendMessage(to, MessageFactory.createRegisterNodeMessage(localhostAddress, port));
         });
 
         final var connectPanel = new JPanel();

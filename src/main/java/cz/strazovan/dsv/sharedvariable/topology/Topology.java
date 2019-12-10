@@ -2,7 +2,7 @@ package cz.strazovan.dsv.sharedvariable.topology;
 
 import com.google.protobuf.AbstractMessage;
 import cz.strazovan.dsv.*;
-import cz.strazovan.dsv.sharedvariable.clock.Clock;
+import cz.strazovan.dsv.sharedvariable.messaging.MessageFactory;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageListener;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
 import cz.strazovan.dsv.sharedvariable.messaging.client.Client;
@@ -54,15 +54,7 @@ public class Topology implements MessageListener {
 
     public void reportDeadNode(TopologyEntry entry) {
         this.removeNode(entry);
-        this.client.broadcast(
-                DeadNodeDiscovered.newBuilder()
-                .setTime(Clock.INSTANCE.tick())
-                .setId(NodeId.newBuilder()
-                        .setIp(entry.getAddressAsString())
-                        .setPort(entry.getPort())
-                        .build())
-                .build()
-        );
+        this.client.broadcast(MessageFactory.createDeadNodeDiscoveredMessage(entry));
     }
 
     private void addNode(TopologyEntry nodeId) {
@@ -108,13 +100,7 @@ public class Topology implements MessageListener {
     }
 
     private void broadcastNewClient(TopologyEntry node) {
-        final var message = NewNode.newBuilder()
-                .setNodeId(NodeId.newBuilder()
-                        .setIp(node.getAddressAsString())
-                        .setPort(node.getPort())
-                        .build())
-                .setTime(Clock.INSTANCE.tick())
-                .build();
+        final var message = MessageFactory.createNewNodeMessage(node);
         this.client.broadcast(message);
     }
 
@@ -125,10 +111,7 @@ public class Topology implements MessageListener {
                 .setIp(this.ownId)
                 .setPort(this.ownPort)
                 .build());
-        final var reply = RegisterNodeResponse.newBuilder()
-                .addAllId(nodesToSend)
-                .setTime(Clock.INSTANCE.tick())
-                .build();
+        final var reply = MessageFactory.createRegisterNodeResponseMessage(nodesToSend);
         this.client.sendMessage(node, reply);
     }
 
