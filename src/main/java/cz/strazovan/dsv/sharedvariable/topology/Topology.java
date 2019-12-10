@@ -2,6 +2,7 @@ package cz.strazovan.dsv.sharedvariable.topology;
 
 import com.google.protobuf.AbstractMessage;
 import cz.strazovan.dsv.*;
+import cz.strazovan.dsv.sharedvariable.clock.Clock;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageFactory;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageListener;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
@@ -60,13 +61,13 @@ public class Topology implements MessageListener {
     private void addNode(TopologyEntry nodeId) {
         if (nodeId.equals(this.ownTopologyEntry)) // there is no point in registering ourselves
             return;
-        logger.info("New node has registered " + nodeId);
+        Clock.INSTANCE.inMDCCWithTime(() -> logger.info("New node has registered " + nodeId));
         this.nodes.add(nodeId);
         this.listeners.forEach(listener -> listener.onNewNode(nodeId));
     }
 
     private void removeNode(TopologyEntry nodeId) {
-        logger.info("Node has disconnected " + nodeId);
+        Clock.INSTANCE.inMDCCWithTime(() -> logger.info("Node has disconnected " + nodeId));
         this.nodes.remove(nodeId);
         this.listeners.forEach(listener -> listener.onNodeRemoved(nodeId));
     }

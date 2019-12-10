@@ -2,6 +2,7 @@ package cz.strazovan.dsv.sharedvariable.messaging.client;
 
 import com.google.protobuf.AbstractMessage;
 import cz.strazovan.dsv.sharedvariable.Component;
+import cz.strazovan.dsv.sharedvariable.clock.Clock;
 import cz.strazovan.dsv.sharedvariable.topology.TopologyChangeListener;
 import cz.strazovan.dsv.sharedvariable.topology.TopologyEntry;
 import io.grpc.ManagedChannel;
@@ -42,10 +43,10 @@ public class Client implements Component, TopologyChangeListener {
                     .send(message);
         } catch (StatusRuntimeException ex) {
             if (ex.getStatus().getCode() == Status.Code.UNAVAILABLE) {
-                logger.error("Dead node detected (" + to + ")");
+                Clock.INSTANCE.inMDCCWithTime(() -> logger.error("Dead node detected (" + to + ")"));
                 this.deadNodeCallback.accept(to);
             } else
-                logger.error("An error has occurred while sending the message", ex);
+                Clock.INSTANCE.inMDCCWithTime(() -> logger.error("An error has occurred while sending the message", ex));
         }
     }
 

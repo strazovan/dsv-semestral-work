@@ -1,5 +1,7 @@
 package cz.strazovan.dsv.sharedvariable.clock;
 
+import org.slf4j.MDC;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -26,7 +28,13 @@ public enum Clock {
         listeners.forEach(clockListener -> clockListener.onTimeChange(max + 1));
     }
 
-    public void registerClockListener(ClockListener listener){
+    public synchronized void inMDCCWithTime(Runnable loggingRunnable) {
+        try (var ignored = MDC.putCloseable("logical-time", String.valueOf(this.getCurrentTime()))) {
+            loggingRunnable.run();
+        }
+    }
+
+    public void registerClockListener(ClockListener listener) {
         this.listeners.add(listener);
     }
 

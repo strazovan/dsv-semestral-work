@@ -1,6 +1,7 @@
 package cz.strazovan.dsv.sharedvariable.messaging.server;
 
 import cz.strazovan.dsv.sharedvariable.Component;
+import cz.strazovan.dsv.sharedvariable.clock.Clock;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
 import cz.strazovan.dsv.sharedvariable.messaging.ServiceImpl;
 import io.grpc.ServerBuilder;
@@ -52,10 +53,10 @@ public class Server implements Component, Runnable {
             this.gRPCServer.start();
             this.gRPCServer.awaitTermination();
         } catch (IOException e) {
-            logger.error("Failed to start gRPC server...");
+            Clock.INSTANCE.inMDCCWithTime(() -> logger.error("Failed to start gRPC server..."));
         } catch (InterruptedException e) {
-            logger.warn("gRPC was interrupted...");
+            Clock.INSTANCE.inMDCCWithTime(() -> logger.warn("gRPC was interrupted..."));
         }
-        logger.info("gRPC server has stopped...");
+        Clock.INSTANCE.inMDCCWithTime(() -> logger.info("gRPC server has stopped..."));
     }
 }

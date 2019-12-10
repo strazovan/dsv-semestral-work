@@ -3,6 +3,7 @@ package cz.strazovan.dsv.sharedvariable.locking;
 import com.google.protobuf.AbstractMessage;
 import cz.strazovan.dsv.LockReply;
 import cz.strazovan.dsv.LockRequest;
+import cz.strazovan.dsv.sharedvariable.clock.Clock;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageFactory;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageListener;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageQueue;
@@ -52,7 +53,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
 
     @Override
     public void lock() {
-        logger.info("Trying to acquire lock...");
+        Clock.INSTANCE.inMDCCWithTime(() -> logger.info("Trying to acquire lock..."));
         synchronized (_lock) {
             this.requests.put(this.ownTopologyEntry, true);
             this.myRequestTs = this.maxRequestTs + 1;
@@ -64,7 +65,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
         this.waitForAllGrants();
 
         this.requests.put(this.ownTopologyEntry, false);
-        logger.info("Lock acquired...");
+        Clock.INSTANCE.inMDCCWithTime(() -> logger.info("Lock acquired..."));
         this.inUse = true;
     }
 
@@ -72,7 +73,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
      * Blocks until we get all grants we need to lock.
      */
     private void waitForAllGrants() {
-        logger.info("Waiting for all grands...");
+        Clock.INSTANCE.inMDCCWithTime(() -> logger.info("Waiting for all grands..."));
         while (!this.grants.values().stream().allMatch(granted -> granted)) {
             try {
                 TimeUnit.MILLISECONDS.sleep(100);
@@ -93,7 +94,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
     public void unlock() {
         if (!this.inUse) throw new IllegalStateException("Calling unlock when not locked");
         this.inUse = false;
-        logger.info("Lock freed...");
+        Clock.INSTANCE.inMDCCWithTime(() -> logger.info("Lock freed..."));
         this.topology.getAllOtherNodes().forEach(nodeId -> {
             if (this.requests.get(nodeId)) {
                 this.requests.computeIfPresent(nodeId, (entry, grant) -> false);
@@ -135,7 +136,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
         final var id = message.getId();
         final var otherNode = new TopologyEntry(id.getIp(), id.getPort());
 
-        logger.info("Received lock request from " + otherNode);
+        Clock.INSTANCE.inMDCCWithTime(() -> logger.info("Received lock request from " + otherNode));
 
         final boolean delay;
         synchronized (_lock) {
@@ -166,7 +167,7 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
     private void handleLockReply(LockReply message) {
         final var id = message.getId();
         final var entry = new TopologyEntry(id.getIp(), id.getPort());
-        logger.info("Received lock reply from " + entry);
+        Clock.INSTANCE.inMDCCWithTime(() -> logger.info("Received lock reply from " + entry));
         this.grants.computeIfPresent(entry, (e, grant) -> true);
     }
 
