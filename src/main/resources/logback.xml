@@ -8,7 +8,10 @@
         </encoder>
     </appender>
 
-    <root level="warning">
+    <logger name="io.grpc.*" level="WARNING">
+        <appender-ref ref="STDOUT" />
+    </logger>
+    <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>
