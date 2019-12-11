@@ -1,6 +1,6 @@
 package cz.strazovan.dsv.sharedvariable.ui;
 
-import cz.strazovan.dsv.sharedvariable.locking.CaRoDistributedLock;
+import cz.strazovan.dsv.sharedvariable.locking.DistributedLock;
 import cz.strazovan.dsv.sharedvariable.messaging.MessageFactory;
 import cz.strazovan.dsv.sharedvariable.messaging.client.Client;
 import cz.strazovan.dsv.sharedvariable.topology.TopologyChangeListener;
@@ -21,7 +21,7 @@ public class ApplicationController implements TopologyChangeListener {
     private JTextField portBox;
 
     private Client client;
-    private CaRoDistributedLock lock;
+    private DistributedLock lock;
     private String localhostAddress;
     private int port;
 
@@ -106,7 +106,7 @@ public class ApplicationController implements TopologyChangeListener {
         this.client = client;
     }
 
-    public void setLock(CaRoDistributedLock lock) {
+    public void setLock(DistributedLock lock) {
         this.lock = lock;
     }
 
