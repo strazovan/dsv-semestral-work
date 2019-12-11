@@ -8,4 +8,6 @@ public interface DistributedLock {
     void withLock(Runnable task);
 
     void unlock();
+
+    void registerStateListener(LockStateListener listener);
 }

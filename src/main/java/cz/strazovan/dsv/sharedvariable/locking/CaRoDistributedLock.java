@@ -14,6 +14,8 @@ import cz.strazovan.dsv.sharedvariable.topology.TopologyEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -31,9 +33,12 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
     private Map<TopologyEntry, Boolean> requests;
     private Map<TopologyEntry, Boolean> grants;
 
+    private List<LockStateListener> listeners;
+
     private static final Object _lock = new Object(); // just simple lock, we don't need ReentrantReadWriteLock here
 
     public CaRoDistributedLock(Topology topology, Client client) {
+        this.listeners = new LinkedList<>();
         this.topology = topology;
         this.ownTopologyEntry = this.topology.getOwnTopologyEntry();
         this.client = client;
@@ -104,6 +109,11 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
         });
     }
 
+    @Override
+    public void registerStateListener(LockStateListener listener) {
+        this.listeners.add(listener);
+    }
+
 
     private void sendRequest(TopologyEntry nodeId) {
         final var message = MessageFactory.createLockRequestMessage(this.ownTopologyEntry, this.myRequestTs);
@@ -124,6 +134,8 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
         } else {
             throw new UnsupportedOperationException("Can not handle " + message.getClass() + " message.");
         }
+
+        this.listeners.forEach(LockStateListener::onLockStateChange);
     }
 
     @Override
@@ -181,6 +193,15 @@ public class CaRoDistributedLock implements DistributedLock, TopologyChangeListe
     public void onNodeRemoved(TopologyEntry nodeId) {
         this.requests.remove(nodeId);
         this.grants.remove(nodeId);
+    }
+
+
+    public boolean hasGrantFrom(TopologyEntry entry) {
+        return this.grants.getOrDefault(entry, false);
+    }
+
+    public boolean hasRequestFrom(TopologyEntry entry) {
+        return this.requests.getOrDefault(entry, false);
     }
 
 }

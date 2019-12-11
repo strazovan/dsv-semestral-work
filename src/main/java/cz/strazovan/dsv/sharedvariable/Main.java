@@ -9,6 +9,7 @@ import cz.strazovan.dsv.sharedvariable.topology.Topology;
 import cz.strazovan.dsv.sharedvariable.ui.ApplicationController;
 import cz.strazovan.dsv.sharedvariable.ui.SharedTextArea;
 import cz.strazovan.dsv.sharedvariable.ui.StatusBar;
+import cz.strazovan.dsv.sharedvariable.ui.topology.CaRoListEntryRenderer;
 import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyList;
 import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyListModel;
 
@@ -100,7 +101,7 @@ public class Main {
         appController.setPortBox(portBox);
         final var connectButton = new JButton("Connect");
         connectButton.addActionListener(e -> {
-          appController.connect();
+            appController.connect();
         });
 
         final var disconnectButton = new JButton("Disconnect");
@@ -117,6 +118,12 @@ public class Main {
         final var topologyListModel = new TopologyListModel();
         appController.setTopologyListModel(topologyListModel);
         final var topologyList = new TopologyList(topologyListModel);
+
+        // todo move this
+        lock.registerStateListener(topologyListModel);
+
+        final var cellRenderer = new CaRoListEntryRenderer(lock);
+        topologyList.setCellRenderer(cellRenderer);
 
         final var mainPanel = new JPanel();
         final var mainLayout = new BorderLayout();
