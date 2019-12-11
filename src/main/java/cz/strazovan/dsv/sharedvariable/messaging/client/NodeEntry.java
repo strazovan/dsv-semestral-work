@@ -22,6 +22,9 @@ public class NodeEntry {
     public void send(AbstractMessage abstractMessage) {
         if (abstractMessage instanceof RegisterNode)
             this.send(((RegisterNode) abstractMessage));
+        else if(abstractMessage instanceof DisconnectNode) {
+            this.send(((DisconnectNode) abstractMessage));
+        }
         else if (abstractMessage instanceof RegisterNodeResponse)
             this.send(((RegisterNodeResponse) abstractMessage));
         else if (abstractMessage instanceof NewNode) {
@@ -42,6 +45,10 @@ public class NodeEntry {
 
     private void send(RegisterNode registerNode) {
         this.stub.register(registerNode);
+    }
+
+    private void send(DisconnectNode disconnectNode){
+        this.stub.disconnect(disconnectNode);
     }
 
     private void send(RegisterNodeResponse registerNodeResponse) {

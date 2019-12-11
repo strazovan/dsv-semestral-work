@@ -13,6 +13,11 @@ message RegisterNode {
     NodeId nodeId = 2;
 }
 
+message DisconnectNode {
+    int64 time = 1;
+    NodeId nodeId = 2;
+}
+
 message NewNode {
     int64 time = 1;
     NodeId nodeId = 2;
@@ -52,6 +57,7 @@ message NodeId {
 
 service SharedVariableService {
     rpc register (RegisterNode) returns (Empty);
+    rpc disconnect (DisconnectNode) returns (Empty);
     rpc registrationDone (RegisterNodeResponse) returns (Empty);
     rpc newNode (NewNode) returns (Empty);
     rpc dataChange (DataChange) returns (Empty);

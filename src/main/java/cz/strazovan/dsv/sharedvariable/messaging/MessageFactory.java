@@ -1,5 +1,6 @@
 package cz.strazovan.dsv.sharedvariable.messaging;
 
+import com.google.protobuf.AbstractMessage;
 import cz.strazovan.dsv.*;
 import cz.strazovan.dsv.sharedvariable.clock.Clock;
 import cz.strazovan.dsv.sharedvariable.topology.TopologyEntry;
@@ -11,6 +12,16 @@ public class MessageFactory {
 
     public static RegisterNode createRegisterNodeMessage(String address, int port) {
         return RegisterNode.newBuilder()
+                .setNodeId(NodeId.newBuilder()
+                        .setIp(address)
+                        .setPort(port)
+                        .build())
+                .setTime(Clock.INSTANCE.tick())
+                .build();
+    }
+
+    public static AbstractMessage createDisconnectMessage(String address, int port) {
+        return DisconnectNode.newBuilder()
                 .setNodeId(NodeId.newBuilder()
                         .setIp(address)
                         .setPort(port)
@@ -68,4 +79,6 @@ public class MessageFactory {
                 .setPort(entry.getPort())
                 .build();
     }
+
+
 }

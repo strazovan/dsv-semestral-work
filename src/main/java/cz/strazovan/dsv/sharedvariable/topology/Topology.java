@@ -85,7 +85,12 @@ public class Topology implements MessageListener {
             this.addNode(node);
             this.broadcastNewClient(node);
             this.sendRegistrationReply(node);
-        } else if (message instanceof NewNode) {
+        }
+        else if(message instanceof DisconnectNode) {
+            final var id = ((DisconnectNode) message).getNodeId();
+            this.removeNode(new TopologyEntry(id.getIp(), id.getPort()));
+        }
+        else if (message instanceof NewNode) {
             final var id = ((NewNode) message).getNodeId();
             this.addNode(new TopologyEntry(id.getIp(), id.getPort()));
         } else if (message instanceof RegisterNodeResponse) {
@@ -130,6 +135,7 @@ public class Topology implements MessageListener {
     @Override
     public void register(MessageQueue queue) {
         queue.register(RegisterNode.class, this);
+        queue.register(DisconnectNode.class, this);
         queue.register(RegisterNodeResponse.class, this);
         queue.register(NewNode.class, this);
         queue.register(DeadNodeDiscovered.class, this);

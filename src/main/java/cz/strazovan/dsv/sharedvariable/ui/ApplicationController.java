@@ -59,6 +59,10 @@ public class ApplicationController implements TopologyChangeListener {
         client.sendMessage(to, MessageFactory.createRegisterNodeMessage(localhostAddress, port));
     }
 
+    public void disconnect() {
+        client.broadcast(MessageFactory.createDisconnectMessage(localhostAddress, port));
+    }
+
     @Override
     public void onNewNode(TopologyEntry nodeId) {
         this.topologyListModel.addElement(nodeId);
@@ -105,4 +109,5 @@ public class ApplicationController implements TopologyChangeListener {
     public void setLock(CaRoDistributedLock lock) {
         this.lock = lock;
     }
+
 }

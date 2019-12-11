@@ -20,6 +20,11 @@ public class ServiceImpl extends SharedVariableServiceGrpc.SharedVariableService
 
 
     @Override
+    public void disconnect(DisconnectNode request, StreamObserver<Empty> responseObserver) {
+        this.processMessage(request, responseObserver, request.getTime());
+    }
+
+    @Override
     public void registrationDone(RegisterNodeResponse request, StreamObserver<Empty> responseObserver) {
         this.processMessage(request, responseObserver, request.getTime());
     }

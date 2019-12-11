@@ -103,10 +103,16 @@ public class Main {
           appController.connect();
         });
 
+        final var disconnectButton = new JButton("Disconnect");
+        disconnectButton.addActionListener(e -> {
+            appController.disconnect();
+        });
+
         final var connectPanel = new JPanel();
         connectPanel.add(hostnameBox);
         connectPanel.add(portBox);
         connectPanel.add(connectButton);
+        connectPanel.add(disconnectButton);
 
         final var topologyListModel = new TopologyListModel();
         appController.setTopologyListModel(topologyListModel);
