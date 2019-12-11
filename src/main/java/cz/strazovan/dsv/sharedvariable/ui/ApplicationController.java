@@ -24,6 +24,8 @@ public class ApplicationController implements TopologyChangeListener {
     private DistributedLock lock;
     private String localhostAddress;
     private int port;
+    private JButton connectButton;
+    private JButton disconnectButton;
 
     public ApplicationController(String localhostAddress, int port) {
         this.localhostAddress = localhostAddress;
@@ -50,22 +52,26 @@ public class ApplicationController implements TopologyChangeListener {
 
     public void save() {
         CompletableFuture.runAsync(() ->
-                client.broadcast(MessageFactory.createDataChangeMessage(this.sharedTextArea.getText())));
+                this.client.broadcast(MessageFactory.createDataChangeMessage(this.sharedTextArea.getText())));
     }
 
     public void connect() {
         final var targetHostname = hostnameBox.getText().isEmpty() ? localhostAddress : hostnameBox.getText();
         final var to = new TopologyEntry(targetHostname, Integer.parseInt(portBox.getText()));
-        client.sendMessage(to, MessageFactory.createRegisterNodeMessage(localhostAddress, port));
+        this.client.sendMessage(to, MessageFactory.createRegisterNodeMessage(localhostAddress, port));
+        this.disconnectButton.setEnabled(true); // this should really happen after registration response
+        this.connectButton.setEnabled(false);
     }
 
     public void disconnect() {
-        client.broadcast(MessageFactory.createDisconnectMessage(localhostAddress, port));
+        this.client.broadcast(MessageFactory.createDisconnectMessage(localhostAddress, port));
+        disconnectButton.setEnabled(false);
+        connectButton.setEnabled(true);
     }
 
     @Override
     public void onNewNode(TopologyEntry nodeId) {
-        client.sendMessage(nodeId, MessageFactory.createDataChangeMessage(this.sharedTextArea.getText()));
+        this.client.sendMessage(nodeId, MessageFactory.createDataChangeMessage(this.sharedTextArea.getText()));
     }
 
     @Override
@@ -99,6 +105,14 @@ public class ApplicationController implements TopologyChangeListener {
 
     public void setPortBox(JTextField portBox) {
         this.portBox = portBox;
+    }
+
+    public void setConnectButton(JButton connectButton) {
+        this.connectButton = connectButton;
+    }
+
+    public void setDisconnectButton(JButton disconnectButton) {
+        this.disconnectButton = disconnectButton;
     }
 
     public void setClient(Client client) {

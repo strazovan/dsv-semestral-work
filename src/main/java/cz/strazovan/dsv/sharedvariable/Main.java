@@ -99,14 +99,17 @@ public class Main {
         portBox.setPreferredSize(new Dimension(50, 20));
         appController.setPortBox(portBox);
         final var connectButton = new JButton("Connect");
+        appController.setConnectButton(connectButton);
+        final var disconnectButton = new JButton("Disconnect");
+        appController.setDisconnectButton(disconnectButton);
         connectButton.addActionListener(e -> {
             appController.connect();
         });
 
-        final var disconnectButton = new JButton("Disconnect");
         disconnectButton.addActionListener(e -> {
             appController.disconnect();
         });
+        disconnectButton.setEnabled(false);
 
         final var connectPanel = new JPanel();
         connectPanel.add(hostnameBox);
