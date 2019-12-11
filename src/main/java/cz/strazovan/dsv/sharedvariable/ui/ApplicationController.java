@@ -5,14 +5,14 @@ import cz.strazovan.dsv.sharedvariable.messaging.MessageFactory;
 import cz.strazovan.dsv.sharedvariable.messaging.client.Client;
 import cz.strazovan.dsv.sharedvariable.topology.TopologyChangeListener;
 import cz.strazovan.dsv.sharedvariable.topology.TopologyEntry;
-import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyListModel;
+import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyTableModel;
 
 import javax.swing.*;
 import java.util.concurrent.CompletableFuture;
 
 public class ApplicationController implements TopologyChangeListener {
 
-    private TopologyListModel topologyListModel;
+    private TopologyTableModel topologyTableModel;
     private SharedTextArea sharedTextArea;
     private JButton unlockButton;
     private JButton lockButton;
@@ -65,17 +65,16 @@ public class ApplicationController implements TopologyChangeListener {
 
     @Override
     public void onNewNode(TopologyEntry nodeId) {
-        this.topologyListModel.addElement(nodeId);
         client.sendMessage(nodeId, MessageFactory.createDataChangeMessage(this.sharedTextArea.getText()));
     }
 
     @Override
     public void onNodeRemoved(TopologyEntry nodeId) {
-        this.topologyListModel.removeElement(nodeId);
+        // nop
     }
 
-    public void setTopologyListModel(TopologyListModel topologyListModel) {
-        this.topologyListModel = topologyListModel;
+    public void setTopologyTableModel(TopologyTableModel topologyTableModel) {
+        this.topologyTableModel = topologyTableModel;
     }
 
     public void setSharedTextArea(SharedTextArea sharedTextArea) {

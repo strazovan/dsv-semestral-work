@@ -9,9 +9,8 @@ import cz.strazovan.dsv.sharedvariable.topology.Topology;
 import cz.strazovan.dsv.sharedvariable.ui.ApplicationController;
 import cz.strazovan.dsv.sharedvariable.ui.SharedTextArea;
 import cz.strazovan.dsv.sharedvariable.ui.StatusBar;
-import cz.strazovan.dsv.sharedvariable.ui.topology.CaRoListEntryRenderer;
-import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyList;
-import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyListModel;
+import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyTable;
+import cz.strazovan.dsv.sharedvariable.ui.topology.TopologyTableModel;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -115,15 +114,13 @@ public class Main {
         connectPanel.add(connectButton);
         connectPanel.add(disconnectButton);
 
-        final var topologyListModel = new TopologyListModel();
-        appController.setTopologyListModel(topologyListModel);
-        final var topologyList = new TopologyList(topologyListModel);
+        final var topologyListModel = new TopologyTableModel(lock);
+        topology.registerListener(topologyListModel);
+        appController.setTopologyTableModel(topologyListModel);
+        final var topologyList = new TopologyTable(topologyListModel);
 
         // todo move this
         lock.registerStateListener(topologyListModel);
-
-        final var cellRenderer = new CaRoListEntryRenderer(lock);
-        topologyList.setCellRenderer(cellRenderer);
 
         final var mainPanel = new JPanel();
         final var mainLayout = new BorderLayout();
