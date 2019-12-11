@@ -4,7 +4,7 @@
         <!-- encoders are assigned the type
              ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
         <encoder>
-            <pattern>P:%d{HH:mm:ss.SSS} L:%X{logical-time} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>L:%X{logical-time} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
