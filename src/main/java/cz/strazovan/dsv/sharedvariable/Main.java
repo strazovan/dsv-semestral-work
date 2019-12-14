@@ -53,7 +53,10 @@ public class Main {
                     JOptionPane.PLAIN_MESSAGE,
                     null,
                     availableIps,
-                    "ham");
+                    null);
+            if (localhostAddress == null) {
+                System.exit(1);
+            }
         } catch (SocketException ex) {
             throw new RuntimeException("Failed to start.", ex);
         }
