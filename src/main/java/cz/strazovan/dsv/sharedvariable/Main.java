@@ -16,7 +16,9 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Collections;
 
 public class Main {
 
@@ -29,20 +31,33 @@ public class Main {
             port = Integer.parseInt(args[0]);
         }
 
-        final String localhostAddress;
-        try {
-            localhostAddress = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException ex) {
-            throw new RuntimeException("Failed to start.", ex);
-        }
-
-
         try {
             UIManager.setLookAndFeel(
                     UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             throw new RuntimeException("Failed to set system look and feel.", e);
         }
+
+        final var frame = new JFrame();
+        final String localhostAddress;
+
+        try {
+            final var availableIps = Collections.list(NetworkInterface.getNetworkInterfaces()).stream()
+                    .flatMap(networkInterface -> Collections.list(networkInterface.getInetAddresses()).stream())
+                    .map(InetAddress::getHostAddress)
+                    .toArray(String[]::new);
+            localhostAddress = (String) JOptionPane.showInputDialog(
+                    frame,
+                    "Choose your ip:",
+                    "IP selection",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    availableIps,
+                    "ham");
+        } catch (SocketException ex) {
+            throw new RuntimeException("Failed to start.", ex);
+        }
+
 
         final var messageQueue = new MessageQueue();
         messageQueue.start();
@@ -63,7 +78,6 @@ public class Main {
         lock.register(messageQueue);
 
         // TODO refactor UI definition, this is just for getting things done and make something i can test
-        final var frame = new JFrame();
         final var appController = new ApplicationController(localhostAddress, port);
         topology.registerListener(appController);
         appController.setClient(client);
